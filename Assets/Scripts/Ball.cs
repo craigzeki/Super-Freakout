@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -9,32 +10,40 @@ public class Ball : MonoBehaviour
 
     [SerializeField] private int _startSpeed = 1;
     [SerializeField] private int _maxSpeed = 15;
-    [SerializeField] private Vector3 _ballStartPosition= Vector3.zero;
+    [SerializeField] private Vector3 _ballStartPosition = Vector3.zero;
     [SerializeField] private float _minYOffsetVelocity = 0.5f;
+    [SerializeField] private float _minBounceAngleDeg = 15;
+    [SerializeField] private float _maxBounceAngleDeg = 85;
+
     private Rigidbody2D _myRb;
 
     private int _speed;
-
+    private Vector3 _minVelocityNorm;
+    private Vector3 _maxVelocityNorm;
+    private Vector3 _previousVelocity = Vector3.zero;
     public int OwnedByPlayer { get => _ownedByPlayer; }
     public int Speed { get => _speed; }
 
     private void Awake()
     {
+        _minVelocityNorm = new Vector3(1, Mathf.Tan(_minBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
+        _maxVelocityNorm = new Vector3(1, Mathf.Tan(_maxBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _myRb = GetComponent<Rigidbody2D>();
     }
     // Start is called before the first frame update
     void Start()
     {
-        
+
         Respawn(true);
     }
 
     private void FixedUpdate()
     {
-        Debug.Log("Magnitude = " + _myRb.velocity.magnitude.ToString());
+        //Debug.Log("Magnitude = " + _myRb.velocity.magnitude.ToString());
         //if (_myRb.velocity.magnitude < _speed)
         //{
-            _myRb.velocity = _myRb.velocity.normalized * _speed;
+        _myRb.velocity = _myRb.velocity.normalized * _speed;
+        _previousVelocity = _myRb.velocity;
         //}
     }
 
@@ -45,11 +54,11 @@ public class Ball : MonoBehaviour
 
         transform.position = _ballStartPosition;
         _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
-        if(_myRb.velocity.y > 0)
+        if (_myRb.velocity.y > 0)
         {
             _myRb.velocity.Scale(Vector2.down);
         }
-        if(Mathf.Abs(_myRb.velocity.normalized.y) < (Mathf.Abs(_myRb.velocity.normalized.x) + _minYOffsetVelocity))
+        if (Mathf.Abs(_myRb.velocity.normalized.y) < (Mathf.Abs(_myRb.velocity.normalized.x) + _minYOffsetVelocity))
         {
             _myRb.velocity = new Vector2(_myRb.velocity.x, -(Mathf.Abs(_myRb.velocity.normalized.x) + _minYOffsetVelocity));
         }
@@ -72,5 +81,51 @@ public class Ball : MonoBehaviour
         {
             gameObject.GetComponent<SpriteRenderer>().color = Color.white;
         }
+        
     }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Vector3 newVector3;
+        float angle_rad;
+
+        angle_rad = Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x));
+        _minVelocityNorm = new Vector3(1, Mathf.Tan(_minBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
+        _maxVelocityNorm = new Vector3(1, Mathf.Tan(_maxBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
+        //limit reflection to outside of 30 degrees to prevent getting stuck in horizontal motion
+        //adapted from https://answers.unity.com/questions/1920939/set-bounce-angle-of-an-object.html
+        if (angle_rad == 0)
+        {
+
+            _myRb.velocity = _previousVelocity;
+            Debug.Log("Angle: 0 - Corrected to previous velocity: " + _myRb.velocity.ToString());
+        }
+        
+        if (angle_rad < (Mathf.Deg2Rad * _minBounceAngleDeg)) 
+        {
+            newVector3 = _minVelocityNorm;
+            newVector3 *= _myRb.velocity.magnitude;
+            newVector3.x *= Mathf.Sign(_myRb.velocity.x);
+            newVector3.y *= Mathf.Sign(_myRb.velocity.y);
+            _myRb.velocity = newVector3;
+            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString() + " - Corrected: " + (Mathf.Rad2Deg * Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x))).ToString("##.#"));
+        
+        }
+        else if(angle_rad > (Mathf.Deg2Rad * _maxBounceAngleDeg))
+        {
+            newVector3 = _maxVelocityNorm;
+            newVector3 *= _myRb.velocity.magnitude;
+            newVector3.x *= Mathf.Sign(_myRb.velocity.x);
+            newVector3.y *= Mathf.Sign(_myRb.velocity.y);
+            _myRb.velocity = newVector3;
+            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString() + " - Corrected: " + (Mathf.Rad2Deg * Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x))).ToString("##.#"));
+
+        }
+        else
+        {
+            //do nothing
+            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString("##.#"));
+        }
+
+    }
+
 }
