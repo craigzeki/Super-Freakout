@@ -133,6 +133,8 @@ MonoBehaviour:
   _minYOffsetVelocity: 0.5
   _minBounceAngleDeg: 15
   _maxBounceAngleDeg: 86
+  _stuckVelocityLimit: 0.01
+  _stuckCountLimit: 2
 --- !u!61 &790513195173171466
 BoxCollider2D:
   m_ObjectHideFlags: 0

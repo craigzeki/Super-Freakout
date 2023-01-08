@@ -14,13 +14,16 @@ public class Ball : MonoBehaviour
     [SerializeField] private float _minYOffsetVelocity = 0.5f;
     [SerializeField] private float _minBounceAngleDeg = 15;
     [SerializeField] private float _maxBounceAngleDeg = 85;
+    [SerializeField] private float _stuckVelocityLimit = 0.01f;
+    [SerializeField] private int _stuckCountLimit = 2;
 
     private Rigidbody2D _myRb;
 
     private int _speed;
     private Vector3 _minVelocityNorm;
     private Vector3 _maxVelocityNorm;
-    private Vector3 _previousVelocity = Vector3.zero;
+    private int _stuckCount = 0;
+
     public int OwnedByPlayer { get => _ownedByPlayer; }
     public int Speed { get => _speed; }
 
@@ -43,7 +46,21 @@ public class Ball : MonoBehaviour
         //if (_myRb.velocity.magnitude < _speed)
         //{
         _myRb.velocity = _myRb.velocity.normalized * _speed;
-        _previousVelocity = _myRb.velocity;
+        if(_myRb.velocity.magnitude <= _stuckVelocityLimit)
+        {
+            if(++_stuckCount > _stuckCountLimit)
+            {
+                //stuck detection and correction
+                _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
+                _stuckCount = 0;
+                Debug.Log("Stuck detected, reset velocity to: " + _myRb.velocity.ToString());
+            }
+        }
+        else
+        {
+            _stuckCount = 0;
+        }
+        //_previousVelocity = _myRb.velocity;
         //}
     }
 
@@ -56,11 +73,14 @@ public class Ball : MonoBehaviour
         _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
         if (_myRb.velocity.y > 0)
         {
+            //limit to starting in the downwards direction
             _myRb.velocity.Scale(Vector2.down);
         }
         if (Mathf.Abs(_myRb.velocity.normalized.y) < (Mathf.Abs(_myRb.velocity.normalized.x) + _minYOffsetVelocity))
         {
+            //limit to angles which are 
             _myRb.velocity = new Vector2(_myRb.velocity.x, -(Mathf.Abs(_myRb.velocity.normalized.x) + _minYOffsetVelocity));
+            
         }
     }
 
@@ -93,12 +113,12 @@ public class Ball : MonoBehaviour
         _maxVelocityNorm = new Vector3(1, Mathf.Tan(_maxBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         //limit reflection to outside of 30 degrees to prevent getting stuck in horizontal motion
         //adapted from https://answers.unity.com/questions/1920939/set-bounce-angle-of-an-object.html
-        if (angle_rad == 0)
-        {
+        //if (angle_rad == 0)
+        //{
 
-            _myRb.velocity = _previousVelocity;
-            Debug.Log("Angle: 0 - Corrected to previous velocity: " + _myRb.velocity.ToString());
-        }
+        //    _myRb.velocity = _previousVelocity;
+        //    Debug.Log("Angle: 0 - Corrected to previous velocity: " + _myRb.velocity.ToString());
+        //}
         
         if (angle_rad < (Mathf.Deg2Rad * _minBounceAngleDeg)) 
         {
@@ -107,7 +127,7 @@ public class Ball : MonoBehaviour
             newVector3.x *= Mathf.Sign(_myRb.velocity.x);
             newVector3.y *= Mathf.Sign(_myRb.velocity.y);
             _myRb.velocity = newVector3;
-            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString() + " - Corrected: " + (Mathf.Rad2Deg * Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x))).ToString("##.#"));
+            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString() + " - Limited to: " + (Mathf.Rad2Deg * Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x))).ToString("##.#"));
         
         }
         else if(angle_rad > (Mathf.Deg2Rad * _maxBounceAngleDeg))
@@ -117,7 +137,7 @@ public class Ball : MonoBehaviour
             newVector3.x *= Mathf.Sign(_myRb.velocity.x);
             newVector3.y *= Mathf.Sign(_myRb.velocity.y);
             _myRb.velocity = newVector3;
-            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString() + " - Corrected: " + (Mathf.Rad2Deg * Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x))).ToString("##.#"));
+            Debug.Log("Angle: " + (Mathf.Rad2Deg * angle_rad).ToString() + " - Limited to: " + (Mathf.Rad2Deg * Mathf.Abs(Mathf.Atan(_myRb.velocity.y / _myRb.velocity.x))).ToString("##.#"));
 
         }
         else
