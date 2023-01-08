@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rows: 5
-  _columns: 5
+  _columns: 12
   _spacing: 0.1
   _brickPrefab: {fileID: 917871752681711372, guid: 6250b912bc4ba9e4384657b92843558e, type: 3}
   _brickColors:
