@@ -33,7 +33,15 @@ public class Void : MonoBehaviour
                 }
                 else
                 {
-                    collision.gameObject.GetComponent<Ball>().Respawn(true);
+                    if(collision.gameObject.GetComponent<Ball>().PreventRespawn)
+                    {
+                        Destroy(collision.gameObject);
+                    }
+                    else
+                    {
+                        collision.gameObject.GetComponent<Ball>().Respawn(true);
+                    }
+                    
                 }
             }
             else

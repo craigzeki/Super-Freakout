@@ -30,12 +30,13 @@ public class Brick : MonoBehaviour
             {
                 bool wasLastBrick;
                 gameInfo.BrickManager.PlayBrickSound(AudioIndex);
-                gameInfo.BrickManager.RemoveBrick(this, out wasLastBrick);
-                if(wasLastBrick)
-                {
-                    gameInfo.BrickManager.ResetBricks();
-                    collision.transform.GetComponent<Ball>().IncreaseSpeed(gameInfo.BrickManager.SpeedIncrement);
-                }
+                gameInfo.BrickManager.RemoveBrick(this, collision.transform.GetComponent<Ball>());
+                //gameInfo.BrickManager.RemoveBrick(this, out wasLastBrick);
+                //if(wasLastBrick)
+                //{
+                //    gameInfo.BrickManager.ResetBricks();
+                //    collision.transform.GetComponent<Ball>().IncreaseSpeed(gameInfo.BrickManager.SpeedIncrement);
+                //}
             }
             PlayerInfo playerInfo = GameManager.Instance.GetPlayerInfo(collision.transform.GetComponent<Ball>().OwnedByPlayer);
             if(playerInfo != null)

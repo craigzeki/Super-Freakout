@@ -8,7 +8,7 @@ public class Ball : MonoBehaviour
 {
     private int _ownedByPlayer = -1;
 
-    [SerializeField] private int _startSpeed = 1;
+    [SerializeField] private int _startSpeed = 5;
     [SerializeField] private int _maxSpeed = 15;
     [SerializeField] private Vector3 _ballStartPosition = Vector3.zero;
     [SerializeField] private float _minYOffsetVelocity = 0.5f;
@@ -23,12 +23,16 @@ public class Ball : MonoBehaviour
     private Vector3 _minVelocityNorm;
     private Vector3 _maxVelocityNorm;
     private int _stuckCount = 0;
+    private bool _preventRespawn = false;
+    private int _respawnSpeed;
 
     public int OwnedByPlayer { get => _ownedByPlayer; }
     public int Speed { get => _speed; }
+    public bool PreventRespawn { get => _preventRespawn; set => _preventRespawn = value; }
 
     private void Awake()
     {
+        _respawnSpeed = _speed = _startSpeed; 
         _minVelocityNorm = new Vector3(1, Mathf.Tan(_minBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _maxVelocityNorm = new Vector3(1, Mathf.Tan(_maxBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _myRb = GetComponent<Rigidbody2D>();
@@ -36,8 +40,16 @@ public class Ball : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        
 
-        Respawn(true);
+        if (_preventRespawn)
+        {
+            Respawn(false, false);
+        }
+        else
+        {
+            Respawn(true);
+        }
     }
 
     private void FixedUpdate()
@@ -66,6 +78,7 @@ public class Ball : MonoBehaviour
 
     public void Respawn(bool resetSpeed, bool resetPlayer = true)
     {
+        if (_preventRespawn) return;
         if (resetSpeed) _speed = _startSpeed;
         if (resetPlayer) SetPlayerOwnership(-1);
 
@@ -89,6 +102,11 @@ public class Ball : MonoBehaviour
         _speed = Mathf.Min(_speed + speedIncrement, _maxSpeed);
     }
 
+    public void IncreaseRespawnSpeed(int speedIncrement)
+    {
+        _respawnSpeed = Mathf.Min(_respawnSpeed + speedIncrement, _maxSpeed);
+    }
+
     public void SetPlayerOwnership(int playerID)
     {
         _ownedByPlayer = playerID;
@@ -105,6 +123,12 @@ public class Ball : MonoBehaviour
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if((collision.gameObject.tag == "Player") && (_preventRespawn))
+        {
+            //this is a new ball due to level completion
+            _speed = _respawnSpeed;
+        }
+
         Vector3 newVector3;
         float angle_rad;
 

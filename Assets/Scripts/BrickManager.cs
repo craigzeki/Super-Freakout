@@ -14,10 +14,13 @@ public class BrickManager : MonoBehaviour
     [SerializeField] private Color[] _brickColors;
     [SerializeField] private AudioClip[] _brickSounds;
     [SerializeField] private int _speedIncrement = 1;
+    [SerializeField] private GameObject _ballPrefab;
+    [SerializeField] private Transform _ballSpawnPoint;
 
     private List<GameObject> bricks = new List<GameObject>();
 
     private AudioSource _myAS;
+    private int _levelCount = 0;
 
     public int SpeedIncrement { get => _speedIncrement; }
 
@@ -29,6 +32,7 @@ public class BrickManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _levelCount= 0;
         ResetBricks();
     }
 
@@ -65,15 +69,32 @@ public class BrickManager : MonoBehaviour
 
     }
 
-    public void RemoveBrick(Brick brick, out bool wasLastBrick)
+    //public void RemoveBrick(Brick brick, out bool wasLastBrick)
+    public void RemoveBrick(Brick brick, Ball ball)
     {
-        wasLastBrick = false;
+        //wasLastBrick = false;
         bricks.Remove(brick.gameObject);
 
         if (bricks.Count == 0)
         {
-            wasLastBrick = true;
+            //wasLastBrick = true;
+            _levelCount++;
             ResetBricks();
+            
+            ball.IncreaseSpeed(SpeedIncrement);
+            //spawn additional ball
+            if ((_ballPrefab != null) && (_ballSpawnPoint != null))
+            {
+                GameObject newBall = Instantiate(_ballPrefab, _ballSpawnPoint.position, Quaternion.identity);
+                if(newBall != null)
+                {
+                    newBall.GetComponent<Ball>().IncreaseRespawnSpeed(SpeedIncrement * _levelCount);
+                    GameManager.Instance.GetPlayerInfo(ball.OwnedByPlayer).Balls++;
+                    newBall.GetComponent<Ball>().PreventRespawn= true;
+                    newBall.GetComponent<Ball>().SetPlayerOwnership(ball.OwnedByPlayer);
+                }
+            }
+            
         }
     }
 
