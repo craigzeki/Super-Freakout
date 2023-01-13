@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameSelectPanel : MonoBehaviour
+public class MultiplayerGameTypePanel : MonoBehaviour
 {
     private const int NUM_OF_MENU_ITEMS = 3;
     [SerializeField] private MenuBricks[] _menuBricks = new MenuBricks[NUM_OF_MENU_ITEMS];
-    [SerializeField] private GameObject _multiPlayerGameTypePanel;
+    [SerializeField] private GameObject _gameSelectPanel;
+    [SerializeField] private GameObject _multiPlayerDetailsPanel;
+    
 
     private int _currentMenuItem = 0;
 
@@ -40,16 +42,18 @@ public class GameSelectPanel : MonoBehaviour
         {
             switch (_currentMenuItem)
             {
-                case 0: //Single Player
-                    GameManager.Instance.SetGameState(GameState.SINGLE_PLAYER);
-                    break;
-                case 1: //Multi Player
-                    _multiPlayerGameTypePanel.SetActive(true);
-                    _multiPlayerGameTypePanel.GetComponent<MultiplayerGameTypePanel>().ResetMenu();
+                case 0: //Host
+                    _multiPlayerDetailsPanel.SetActive(true);
+                    _multiPlayerDetailsPanel.GetComponent<MultiplayerDetailsPanel>().ResetMenu();
                     gameObject.SetActive(false);
                     break;
-                case 2: //Quit
-                    GameManager.Instance.SetGameState(GameState.QUIT);
+                case 1: //Join
+                    
+                    break;
+                case 2: //Back
+                    _gameSelectPanel.SetActive(true);
+                    _gameSelectPanel.GetComponent<GameSelectPanel>().ResetMenu();
+                    gameObject.SetActive(false);
                     break;
 
                 default:

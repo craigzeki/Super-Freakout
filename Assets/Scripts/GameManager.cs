@@ -9,7 +9,8 @@ public enum GameState : int
 {
     MENU = 0,
     SINGLE_PLAYER,
-    MULTI_PLAYER,
+    MULTI_PLAYER_H2H,
+    MULTI_PLAYER_BATTLE,
     QUIT,
     NUM_OF_STATES
 }
@@ -82,7 +83,13 @@ public class GameManager : MonoBehaviour
                     LoadSinglePlayer();
                 }
                 break;
-            case GameState.MULTI_PLAYER:
+            case GameState.MULTI_PLAYER_H2H:
+                if (Input.GetKeyUp(KeyCode.Escape))
+                {
+                    SetGameState(GameState.MENU);
+                }
+                break;
+            case GameState.MULTI_PLAYER_BATTLE:
                 if (Input.GetKeyUp(KeyCode.Escape))
                 {
                     SetGameState(GameState.MENU);
@@ -114,8 +121,11 @@ public class GameManager : MonoBehaviour
                         LoadSinglePlayer();
                         _gameState = targetGameState;
                         break;
-                    case GameState.MULTI_PLAYER:
+                    case GameState.MULTI_PLAYER_H2H:
                         //Do Nothing for now
+                        break;
+                    case GameState.MULTI_PLAYER_BATTLE:
+                        //Do nothing for now
                         break;
                     case GameState.QUIT:
                         QuitGame();
@@ -138,7 +148,9 @@ public class GameManager : MonoBehaviour
                     
                 }
                 break;
-            case GameState.MULTI_PLAYER:
+            case GameState.MULTI_PLAYER_H2H:
+                break;
+            case GameState.MULTI_PLAYER_BATTLE:
                 break;
             case GameState.QUIT:
                 QuitGame();
@@ -207,7 +219,9 @@ public class GameManager : MonoBehaviour
             case GameState.SINGLE_PLAYER:
                 // handle switching to high score entry here
                 break;
-            case GameState.MULTI_PLAYER:
+            case GameState.MULTI_PLAYER_H2H:
+                break;
+            case GameState.MULTI_PLAYER_BATTLE:
                 break;
             case GameState.QUIT:
                 break;
