@@ -22,7 +22,7 @@ public class SinglePlayerCanvas : MonoBehaviour
     private void OnGUI()
     {
         if (GameManager.Instance.GameState != GameState.SINGLE_PLAYER) return;
-        PlayerInfo playerInfo = GameManager.Instance.GetPlayerInfo(0);
+        PlayerInfo playerInfo = GameManager.Instance.CurrentGame.GetPlayerInfo(0);
         if (playerInfo == null) return;
         _pointsText.text = "Points: " + playerInfo.Points.ToString("00000000");
         if(playerInfo.Balls > 0)

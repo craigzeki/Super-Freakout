@@ -89,9 +89,9 @@ public class BrickManager : MonoBehaviour
                 if(newBall != null)
                 {
                     newBall.GetComponent<Ball>().IncreaseRespawnSpeed(SpeedIncrement * _levelCount);
-                    GameManager.Instance.GetPlayerInfo(ball.OwnedByPlayer).Balls++;
+                    GameManager.Instance.CurrentGame.GetPlayerInfo(ball.OwnedByPlayer).Balls++;
                     newBall.GetComponent<Ball>().PreventRespawn= true;
-                    newBall.GetComponent<Ball>().SetPlayerOwnership(ball.OwnedByPlayer);
+                    newBall.GetComponent<Ball>().SetPlayerOwnership(ball.OwnedByPlayer, ball.GetComponent<SpriteRenderer>().color);
                 }
             }
             

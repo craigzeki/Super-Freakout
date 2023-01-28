@@ -80,7 +80,7 @@ public class Ball : MonoBehaviour
     {
         if (_preventRespawn) return;
         if (resetSpeed) _speed = _startSpeed;
-        if (resetPlayer) SetPlayerOwnership(-1);
+        if (resetPlayer) SetPlayerOwnership(-1, Color.white);
 
         transform.position = _ballStartPosition;
         _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
@@ -107,18 +107,12 @@ public class Ball : MonoBehaviour
         _respawnSpeed = Mathf.Min(_respawnSpeed + speedIncrement, _maxSpeed);
     }
 
-    public void SetPlayerOwnership(int playerID)
+    public void SetPlayerOwnership(int playerID, Color playerColor)
     {
         _ownedByPlayer = playerID;
-        PlayerInfo playerInfo = GameManager.Instance.GetPlayerInfo(playerID);
-        if (playerInfo != null)
-        {
-            gameObject.GetComponent<SpriteRenderer>().color = GameManager.Instance.GetPlayerInfo(playerID).Color;
-        }
-        else
-        {
-            gameObject.GetComponent<SpriteRenderer>().color = Color.white;
-        }
+        
+        gameObject.GetComponent<SpriteRenderer>().color = playerColor;
+        
         
     }
     private void OnCollisionEnter2D(Collision2D collision)

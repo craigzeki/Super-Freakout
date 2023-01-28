@@ -15,24 +15,36 @@ public enum GameState : int
     NUM_OF_STATES
 }
 
+public enum MultiPlayerMode : int
+{
+    HOST = 0,
+    CLIENT,
+    NOT_SET,
+    NUM_OF_MODES
+}
+
 public class GameManager : MonoBehaviour
 {
-    private static Color PLAYER_YELLOW = new Color(195, 200, 0);
-    private static Color PLAYER_TEAL = new Color(0, 183, 162);
+
 
     [SerializeField] private Vector3 singlePlayerGamePosition = Vector3.zero;
     [SerializeField] private Vector3 multiplayerPlayer1GamePosition = Vector3.zero;
     [SerializeField] private Vector3 multiplayerPlayer2GamePosition = Vector3.zero;
     [SerializeField] private GameObject _gameContainerPrefab;
+    [SerializeField] private GameObject _gameContainerMultiBattlePrefab;
     [SerializeField] private Canvas _menuCanvas;
     [SerializeField] private Canvas _singlePlayerCanvas;
+    [SerializeField] private Canvas _multiPlayerCanvas;
+    [SerializeField] private Camera _camera;
     
-    [SerializeField] private int _numOfPlayers = 1;
-    [SerializeField] private int _startingBalls = 3;
+    //[SerializeField] private int _numOfPlayers = 1;
+    //[SerializeField] private int _startingBalls = 3;
 
-    private List<Game> _games = new List<Game>();
-    private List<PlayerInfo> _playerInfo = new List<PlayerInfo>();
+    //private List<Game> _games = new List<Game>();
+
+    private Game _currentGame = null;
     private GameState _gameState = GameState.MENU;
+    private MultiPlayerMode _multiPlayerMode = MultiPlayerMode.NOT_SET;
 
     private static GameManager instance;
 
@@ -46,10 +58,24 @@ public class GameManager : MonoBehaviour
     }
 
     public GameState GameState { get => _gameState;}
+    public MultiPlayerMode MultiPlayerMode
+    {
+        get => _multiPlayerMode;
+        
+        set
+        {
+            //can only be set externally to one of the two valid options, host or client
+            if(value >= MultiPlayerMode.NOT_SET) return;
+            _multiPlayerMode = value;
+        }
+    }
+
+    public Game CurrentGame { get => _currentGame;  }
 
     private void Awake()
     {
         _singlePlayerCanvas.enabled = false;
+        _multiPlayerCanvas.enabled = false;
         _menuCanvas.enabled = true;
         _gameState = GameState.MENU;
     }
@@ -125,7 +151,8 @@ public class GameManager : MonoBehaviour
                         //Do Nothing for now
                         break;
                     case GameState.MULTI_PLAYER_BATTLE:
-                        //Do nothing for now
+                        LoadMultiPlayerBattle();
+                        _gameState = targetGameState;
                         break;
                     case GameState.QUIT:
                         QuitGame();
@@ -151,6 +178,19 @@ public class GameManager : MonoBehaviour
             case GameState.MULTI_PLAYER_H2H:
                 break;
             case GameState.MULTI_PLAYER_BATTLE:
+                switch (targetGameState)
+                {
+                    case GameState.MENU:
+                        LoadMenu();
+                        _gameState = targetGameState;
+                        break;
+
+                    case GameState.QUIT:
+                        QuitGame();
+                        _gameState = targetGameState;
+                        break;
+
+                }
                 break;
             case GameState.QUIT:
                 QuitGame();
@@ -162,53 +202,70 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void DestroyGames()
+    private void DestroyGame()
     {
-        foreach (Game game in _games)
-        {
-            Destroy(game.gameObject);
-        }
-        _games.Clear();
+        if (_currentGame == null) return;
+        Destroy(_currentGame.gameObject);
+        _currentGame = null;
     }
 
-    private void DestroyPlayers()
-    {
-        foreach(PlayerInfo playerInfo in _playerInfo)
-        {
-            //do nothing for now
-        }
-        _playerInfo.Clear();
-    }
+
 
     private void LoadSinglePlayer()
     {
         _menuCanvas.enabled = false;
+        _multiPlayerCanvas.enabled = false;
         _singlePlayerCanvas.enabled = true;
 
-        DestroyGames();
-        DestroyPlayers();
+        DestroyGame();
 
-        _playerInfo.Add(new PlayerInfo(PLAYER_YELLOW, "Player 1", 0, _startingBalls));
+
 
         GameObject gameContainer = Instantiate(_gameContainerPrefab, singlePlayerGamePosition, Quaternion.identity);
-        gameContainer.GetComponent<Game>().Paddle.GetComponent<SpriteRenderer>().color = PLAYER_YELLOW;
-        _games.Add(gameContainer.GetComponent<Game>());
+        gameContainer.GetComponent<Game>().StartSinglePlayer();
+        _currentGame = gameContainer.GetComponent<Game>();
         
     }
 
-    public PlayerInfo GetPlayerInfo(int playerID)
+    private void LoadMultiPlayerBattle()
     {
-        if ((playerID > _playerInfo.Count - 1) || (playerID < 0)) return null;
+        if (_multiPlayerMode >= MultiPlayerMode.NOT_SET) return;
+        _menuCanvas.enabled = false;
+        _multiPlayerCanvas.enabled = true;
+        _singlePlayerCanvas.enabled = false;
 
-        return _playerInfo[playerID];
+        DestroyGame();
+
+        //create new multiplayer game
+        GameObject gameContainer = Instantiate(_gameContainerMultiBattlePrefab, singlePlayerGamePosition, Quaternion.identity);
+        _currentGame = gameContainer.GetComponent<Game>();
+
+        if (_multiPlayerMode == MultiPlayerMode.HOST)
+        {
+            _currentGame.StartMultiPlayerHost();
+        }
+        else if(_multiPlayerMode == MultiPlayerMode.CLIENT)
+        {
+            _camera.transform.rotation = Quaternion.Euler(0, 0, 180);
+            _currentGame.StartMultiPlayerClient();
+
+        }
+
     }
 
-    public Game GetGameInfo(int playerID)
-    {
-        if((playerID > _games.Count - 1) || (playerID < 0)) return null;
+    //public PlayerInfo GetPlayerInfo(int playerID)
+    //{
+    //    if ((playerID > _playerInfo.Count - 1) || (playerID < 0)) return null;
 
-        return _games[playerID];
-    }
+    //    return _playerInfo[playerID];
+    //}
+
+    //public Game GetGameInfo(int playerID)
+    //{
+    //    if ((playerID > _games.Count - 1) || (playerID < 0)) return null;
+
+    //    return _games[playerID];
+    //}
 
     public void GameOver()
     {
@@ -233,8 +290,12 @@ public class GameManager : MonoBehaviour
 
     private void LoadMenu()
     {
-        DestroyGames();
+        _camera.transform.rotation = Quaternion.Euler(0, 0, 0);
+        DestroyGame();
         _menuCanvas.enabled = true;
         _singlePlayerCanvas.enabled = false;
+        _multiPlayerCanvas.enabled = false;
+
+        _multiPlayerMode = MultiPlayerMode.NOT_SET;
     }
 }

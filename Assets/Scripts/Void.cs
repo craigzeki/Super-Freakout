@@ -22,7 +22,7 @@ public class Void : MonoBehaviour
         {
             
 
-            PlayerInfo playerInfo = GameManager.Instance.GetPlayerInfo(collision.gameObject.GetComponent<Ball>().OwnedByPlayer);
+            PlayerInfo playerInfo = GameManager.Instance.CurrentGame.GetPlayerInfo(collision.gameObject.GetComponent<Ball>().OwnedByPlayer);
             if(playerInfo != null)
             {
                 playerInfo.Balls = Mathf.Clamp(playerInfo.Balls - 1, 0, playerInfo.Balls);

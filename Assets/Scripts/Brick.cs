@@ -25,20 +25,11 @@ public class Brick : MonoBehaviour
         if(collision.transform.tag == "Ball")
         {
             if (collision.transform.GetComponent<Ball>().OwnedByPlayer == -1) return;
-            Game gameInfo = GameManager.Instance.GetGameInfo(collision.transform.GetComponent<Ball>().OwnedByPlayer);
-            if(gameInfo != null)
-            {
-                bool wasLastBrick;
-                gameInfo.BrickManager.PlayBrickSound(AudioIndex);
-                gameInfo.BrickManager.RemoveBrick(this, collision.transform.GetComponent<Ball>());
-                //gameInfo.BrickManager.RemoveBrick(this, out wasLastBrick);
-                //if(wasLastBrick)
-                //{
-                //    gameInfo.BrickManager.ResetBricks();
-                //    collision.transform.GetComponent<Ball>().IncreaseSpeed(gameInfo.BrickManager.SpeedIncrement);
-                //}
-            }
-            PlayerInfo playerInfo = GameManager.Instance.GetPlayerInfo(collision.transform.GetComponent<Ball>().OwnedByPlayer);
+
+            this.gameObject.GetComponentInParent<BrickManager>().PlayBrickSound(AudioIndex);
+            this.gameObject.GetComponentInParent<BrickManager>().RemoveBrick(this, collision.transform.GetComponent<Ball>());
+
+            PlayerInfo playerInfo = GameManager.Instance.CurrentGame.GetPlayerInfo(collision.transform.GetComponent<Ball>().OwnedByPlayer);
             if(playerInfo != null)
             {
                 playerInfo.Points += (Points * collision.transform.GetComponent<Ball>().Speed);

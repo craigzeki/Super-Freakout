@@ -52,7 +52,7 @@ public class Paddle : MonoBehaviour
     {
         if(collision.transform.gameObject.tag == "Ball")
         {
-            collision.gameObject.GetComponent<Ball>().SetPlayerOwnership(PlayerID);
+            collision.gameObject.GetComponent<Ball>().SetPlayerOwnership(PlayerID, gameObject.GetComponent<SpriteRenderer>().color);
             _myAS.Play();
         }
     }
