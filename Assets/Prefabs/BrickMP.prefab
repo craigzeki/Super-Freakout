@@ -144,8 +144,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad7e13eb17b60094e95276d9c44e8d6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _brickColors:
+  - {r: 0.16470589, g: 0.6431373, b: 0, a: 1}
+  - {r: 0.8962264, g: 0.5374961, b: 0, a: 1}
+  - {r: 0.8584906, g: 0.20284164, b: 0.10933607, a: 1}
+  - {r: 0.32776263, g: 0.1579299, b: 0.8584906, a: 1}
+  - {r: 0.7735849, g: 0.09852261, b: 0.75657016, a: 1}
   AudioIndex: 0
   Points: 0
+  BrickManager: {fileID: 0}
 --- !u!114 &1352623531471237242
 MonoBehaviour:
   m_ObjectHideFlags: 0

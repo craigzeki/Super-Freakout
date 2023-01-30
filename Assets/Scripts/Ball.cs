@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -25,10 +26,12 @@ public class Ball : MonoBehaviour
     private int _stuckCount = 0;
     private bool _preventRespawn = false;
     private int _respawnSpeed;
+    private int _ballID = 0;
 
     public int OwnedByPlayer { get => _ownedByPlayer; }
     public int Speed { get => _speed; }
     public bool PreventRespawn { get => _preventRespawn; set => _preventRespawn = value; }
+    public int BallID { get => _ballID; set => _ballID = value; }
 
     private void Awake()
     {
@@ -36,11 +39,12 @@ public class Ball : MonoBehaviour
         _minVelocityNorm = new Vector3(1, Mathf.Tan(_minBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _maxVelocityNorm = new Vector3(1, Mathf.Tan(_maxBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _myRb = GetComponent<Rigidbody2D>();
+        _ballStartPosition = transform.position;
     }
     // Start is called before the first frame update
     void Start()
     {
-        
+        if (GameManager.Instance.GameMode != GameMode.SINGLE) return;
 
         if (_preventRespawn)
         {
@@ -54,6 +58,7 @@ public class Ball : MonoBehaviour
 
     private void FixedUpdate()
     {
+        //if ((GameManager.Instance.GameMode != GameMode.NOT_SET) && (GameManager.Instance.GameMode != GameMode.SINGLE)) return;
         //Debug.Log("Magnitude = " + _myRb.velocity.magnitude.ToString());
         //if (_myRb.velocity.magnitude < _speed)
         //{
@@ -76,15 +81,30 @@ public class Ball : MonoBehaviour
         //}
     }
 
-    public void Respawn(bool resetSpeed, bool resetPlayer = true)
+    public void Respawn(bool resetSpeed, bool resetPlayer = true, Vector2 startingVelocityNormalized = default, bool overrideStartingVelocity = false)
     {
         if (_preventRespawn) return;
         if (resetSpeed) _speed = _startSpeed;
         if (resetPlayer) SetPlayerOwnership(-1, Color.white);
 
         transform.position = _ballStartPosition;
-        _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
-        if (_myRb.velocity.y > 0)
+        if(overrideStartingVelocity)
+        {
+            if(startingVelocityNormalized != default)
+            {
+                _myRb.velocity = startingVelocityNormalized * _speed;
+            }
+            else
+            {
+                _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
+            }
+            
+        }
+        else
+        {
+            _myRb.velocity = Random.insideUnitCircle.normalized * _speed;
+        }
+        if ((_myRb.velocity.y > 0) && ((GameManager.Instance.GameMode == GameMode.NOT_SET) || (GameManager.Instance.GameMode == GameMode.SINGLE)))
         {
             //limit to starting in the downwards direction
             _myRb.velocity.Scale(Vector2.down);

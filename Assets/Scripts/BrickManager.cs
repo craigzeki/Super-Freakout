@@ -1,17 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Audio;
 
 [RequireComponent(typeof(AudioSource))]
-public class BrickManager : MonoBehaviour
+public class BrickManager : NetworkBehaviour
 {
 
     [SerializeField] private int _rows;
     [SerializeField] private int _columns;
     [SerializeField] private float _spacing;
     [SerializeField] private GameObject _brickPrefab;
-    [SerializeField] private Color[] _brickColors;
+    [SerializeField] private GameObject _mpBrickPrefab;
+    //[SerializeField] private Color[] _brickColors;
     [SerializeField] private AudioClip[] _brickSounds;
     [SerializeField] private int _speedIncrement = 1;
     [SerializeField] private GameObject _ballPrefab;
@@ -23,6 +25,7 @@ public class BrickManager : MonoBehaviour
     private int _levelCount = 0;
 
     public int SpeedIncrement { get => _speedIncrement; }
+    //public Color[] BrickColors { get => _brickColors; }
 
     private void Awake()
     {
@@ -33,7 +36,7 @@ public class BrickManager : MonoBehaviour
     void Start()
     {
         _levelCount= 0;
-        ResetBricks();
+        
     }
 
     // Update is called once per frame
@@ -42,7 +45,7 @@ public class BrickManager : MonoBehaviour
 
     }
 
-    public void ResetBricks()
+    public void SPResetBricks()
     {
         foreach (GameObject brick in bricks)
         {
@@ -59,14 +62,65 @@ public class BrickManager : MonoBehaviour
                     -y * (_brickPrefab.transform.localScale.y + _spacing)
                     );
                 GameObject brick = Instantiate(_brickPrefab, spawnPos, Quaternion.identity);
-                brick.transform.parent = transform;
-                brick.GetComponent<SpriteRenderer>().color = _brickColors [y % _brickColors.Length];
-                brick.GetComponent<Brick>().AudioIndex = y % _brickSounds.Length;
-                brick.GetComponent<Brick>().Points = _rows - y;
+                //brick.transform.parent = transform;
+                
+                
+                Brick mBrick = brick.GetComponent<Brick>();
+                mBrick.AudioIndex = y % _brickSounds.Length;
+                
+                mBrick.Points = _rows - y;
+                mBrick.BrickManager = this;
+                mBrick.SetColorIndex(y % mBrick.BrickColors.Length);
                 bricks.Add(brick);
             }
         }
 
+    }
+
+    public void MPResetBricks()
+    {
+        if (!IsHost) return;
+        foreach (GameObject brick in bricks)
+        {
+            Destroy(brick);
+        }
+        bricks.Clear();
+
+        int[] brickColors = new int[_columns * _rows];
+        int brickColorsIndex = 0;
+
+        for (int x = 0; x < _columns; x++)
+        {
+            for (int y = 0; y < _rows; y++)
+            {
+                Vector2 spawnPos = (Vector2)transform.position + new Vector2(
+                    x * (_brickPrefab.transform.localScale.x + _spacing),
+                    -y * (_brickPrefab.transform.localScale.y + _spacing)
+                    );
+                GameObject brick = Instantiate(_mpBrickPrefab, spawnPos, Quaternion.identity);
+                
+                
+                Brick mBrick = brick.GetComponent<Brick>();
+                mBrick.AudioIndex = y % _brickSounds.Length;
+                brickColors[brickColorsIndex] = y % mBrick.BrickColors.Length;
+
+                
+                mBrick.Points = _rows - y;
+                mBrick.BrickManager = this;
+                
+                brick.SetActive(true);
+                NetworkObject netObj = brick.GetComponent<NetworkObject>();
+                netObj.Spawn(true);
+                //netObj.TrySetParent(transform);
+
+                //must set the color after the network object has been spawned as it is a network variable
+                mBrick.SetColorIndex(brickColors[brickColorsIndex]);
+                brickColorsIndex++;
+                bricks.Add(brick);
+            }
+        }
+        SetBrickDataClientRpc(brickColors);
+        
     }
 
     //public void RemoveBrick(Brick brick, out bool wasLastBrick)
@@ -79,7 +133,7 @@ public class BrickManager : MonoBehaviour
         {
             //wasLastBrick = true;
             _levelCount++;
-            ResetBricks();
+            SPResetBricks();
             
             ball.IncreaseSpeed(SpeedIncrement);
             //spawn additional ball
@@ -104,5 +158,27 @@ public class BrickManager : MonoBehaviour
 
         _myAS.clip = _brickSounds[soundIndex];
         _myAS.Play();
+    }
+
+    [ClientRpc]
+    private void SetBrickDataClientRpc(int[] colourIDs)
+    {
+        if(colourIDs.Length > bricks.Count) return;
+
+        for(int i = 0; i < colourIDs.Length; i++)
+        {
+            bricks[i].GetComponent<Brick>().BrickManager = this;
+            bricks[i].GetComponent<Brick>().SetColorIndex(colourIDs[i]);
+            
+        }
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        foreach(GameObject brick in bricks)
+        {
+            Destroy(brick);
+        }
     }
 }

@@ -43,13 +43,13 @@ public class MultiplayerGameTypePanel : MonoBehaviour
             switch (_currentMenuItem)
             {
                 case 0: //Host
-                    GameManager.Instance.MultiPlayerMode = MultiPlayerMode.HOST;
+                    GameManager.Instance.GameMode = GameMode.HOST;
                     _multiPlayerDetailsPanel.SetActive(true);
                     _multiPlayerDetailsPanel.GetComponent<MultiplayerDetailsPanel>().ResetMenu();
                     gameObject.SetActive(false);
                     break;
                 case 1: //Join
-                    GameManager.Instance.MultiPlayerMode = MultiPlayerMode.CLIENT;
+                    GameManager.Instance.GameMode = GameMode.CLIENT;
                     GameManager.Instance.SetGameState(GameState.MULTI_PLAYER_BATTLE);
                     
                     break;

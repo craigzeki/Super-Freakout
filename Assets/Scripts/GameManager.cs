@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 
@@ -15,12 +17,21 @@ public enum GameState : int
     NUM_OF_STATES
 }
 
-public enum MultiPlayerMode : int
+public enum GameMode : int
 {
     HOST = 0,
     CLIENT,
+    SINGLE,
     NOT_SET,
     NUM_OF_MODES
+}
+
+public enum PlayerColors : int
+{
+    DEFAULT = 0,
+    YELLOW,
+    TEAL,
+    NUM_OF_COLORS
 }
 
 public class GameManager : MonoBehaviour
@@ -36,7 +47,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Canvas _singlePlayerCanvas;
     [SerializeField] private Canvas _multiPlayerCanvas;
     [SerializeField] private Camera _camera;
-    
+    [SerializeField] private GameObject _mpStatusPanel;
+    [SerializeField] private TextMeshProUGUI _mpStatusText;
+
+    [SerializeField] private List<Color> _playerColors = new List<Color>();
+
     //[SerializeField] private int _numOfPlayers = 1;
     //[SerializeField] private int _startingBalls = 3;
 
@@ -44,7 +59,7 @@ public class GameManager : MonoBehaviour
 
     private Game _currentGame = null;
     private GameState _gameState = GameState.MENU;
-    private MultiPlayerMode _multiPlayerMode = MultiPlayerMode.NOT_SET;
+    private GameMode _gameMode = GameMode.NOT_SET;
 
     private static GameManager instance;
 
@@ -58,22 +73,27 @@ public class GameManager : MonoBehaviour
     }
 
     public GameState GameState { get => _gameState;}
-    public MultiPlayerMode MultiPlayerMode
+    public GameMode GameMode
     {
-        get => _multiPlayerMode;
+        get => _gameMode;
         
         set
         {
             //can only be set externally to one of the two valid options, host or client
-            if(value >= MultiPlayerMode.NOT_SET) return;
-            _multiPlayerMode = value;
+            if(value >= GameMode.NOT_SET) return;
+            _gameMode = value;
         }
     }
 
     public Game CurrentGame { get => _currentGame;  }
+    public List<Color> PlayerColors { get => _playerColors;  }
 
     private void Awake()
     {
+        _playerColors.Add(Color.white); //PLAYER_DEFAULT
+        _playerColors.Add(new Color(195, 200, 0)); //PLAYER_YELLOW
+        _playerColors.Add(new Color(0, 183, 162)); //PLAYER_TEAL
+
         _singlePlayerCanvas.enabled = false;
         _multiPlayerCanvas.enabled = false;
         _menuCanvas.enabled = true;
@@ -118,6 +138,7 @@ public class GameManager : MonoBehaviour
             case GameState.MULTI_PLAYER_BATTLE:
                 if (Input.GetKeyUp(KeyCode.Escape))
                 {
+                    NetworkManager.Singleton.Shutdown();
                     SetGameState(GameState.MENU);
                 }
                 break;
@@ -151,8 +172,7 @@ public class GameManager : MonoBehaviour
                         //Do Nothing for now
                         break;
                     case GameState.MULTI_PLAYER_BATTLE:
-                        LoadMultiPlayerBattle();
-                        _gameState = targetGameState;
+                        if(LoadMultiPlayerBattle()) _gameState = targetGameState;
                         break;
                     case GameState.QUIT:
                         QuitGame();
@@ -218,7 +238,7 @@ public class GameManager : MonoBehaviour
         _singlePlayerCanvas.enabled = true;
 
         DestroyGame();
-
+        _gameMode = GameMode.SINGLE;
 
 
         GameObject gameContainer = Instantiate(_gameContainerPrefab, singlePlayerGamePosition, Quaternion.identity);
@@ -227,9 +247,9 @@ public class GameManager : MonoBehaviour
         
     }
 
-    private void LoadMultiPlayerBattle()
+    private bool LoadMultiPlayerBattle()
     {
-        if (_multiPlayerMode >= MultiPlayerMode.NOT_SET) return;
+        if (_gameMode >= GameMode.NOT_SET) return false;
         _menuCanvas.enabled = false;
         _multiPlayerCanvas.enabled = true;
         _singlePlayerCanvas.enabled = false;
@@ -240,17 +260,18 @@ public class GameManager : MonoBehaviour
         GameObject gameContainer = Instantiate(_gameContainerMultiBattlePrefab, singlePlayerGamePosition, Quaternion.identity);
         _currentGame = gameContainer.GetComponent<Game>();
 
-        if (_multiPlayerMode == MultiPlayerMode.HOST)
+        if (_gameMode == GameMode.HOST)
         {
             _currentGame.StartMultiPlayerHost();
         }
-        else if(_multiPlayerMode == MultiPlayerMode.CLIENT)
+        else if(_gameMode == GameMode.CLIENT)
         {
             _camera.transform.rotation = Quaternion.Euler(0, 0, 180);
             _currentGame.StartMultiPlayerClient();
 
         }
 
+        return true;
     }
 
     //public PlayerInfo GetPlayerInfo(int playerID)
@@ -296,6 +317,16 @@ public class GameManager : MonoBehaviour
         _singlePlayerCanvas.enabled = false;
         _multiPlayerCanvas.enabled = false;
 
-        _multiPlayerMode = MultiPlayerMode.NOT_SET;
+        //_multiPlayerMode = MultiPlayerMode.NOT_SET;
+    }
+
+    public void SetMPStatusEnabled(bool enabled)
+    {
+        _mpStatusPanel.SetActive(enabled);
+    }
+
+    public void SetMPStatusText(string statusText)
+    {
+        _mpStatusText.text = statusText;
     }
 }

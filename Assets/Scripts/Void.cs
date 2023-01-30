@@ -4,49 +4,45 @@ using UnityEngine;
 
 public class Void : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if(collision.tag == "Ball")
         {
             
-
-            PlayerInfo playerInfo = GameManager.Instance.CurrentGame.GetPlayerInfo(collision.gameObject.GetComponent<Ball>().OwnedByPlayer);
-            if(playerInfo != null)
+            if(GameManager.Instance.GameMode == GameMode.SINGLE)
             {
-                playerInfo.Balls = Mathf.Clamp(playerInfo.Balls - 1, 0, playerInfo.Balls);
-                if(playerInfo.Balls == 0)
+                PlayerInfo playerInfo = GameManager.Instance.CurrentGame.GetPlayerInfo(collision.gameObject.GetComponent<Ball>().OwnedByPlayer);
+                if (playerInfo != null)
                 {
-                    collision.gameObject.GetComponent<Ball>().gameObject.SetActive(false);
-                    GameManager.Instance.GameOver();
-                }
-                else
-                {
-                    if(collision.gameObject.GetComponent<Ball>().PreventRespawn)
+                    playerInfo.Balls = Mathf.Clamp(playerInfo.Balls - 1, 0, playerInfo.Balls);
+                    if (playerInfo.Balls == 0)
                     {
-                        Destroy(collision.gameObject);
+                        collision.gameObject.GetComponent<Ball>().gameObject.SetActive(false);
+                        GameManager.Instance.GameOver();
                     }
                     else
                     {
-                        collision.gameObject.GetComponent<Ball>().Respawn(true);
+                        if (collision.gameObject.GetComponent<Ball>().PreventRespawn)
+                        {
+                            Destroy(collision.gameObject);
+                        }
+                        else
+                        {
+                            collision.gameObject.GetComponent<Ball>().Respawn(true);
+                        }
+
                     }
-                    
+                }
+                else
+                {
+                    collision.gameObject.GetComponent<Ball>().Respawn(true);
                 }
             }
-            else
+            else //multiplayer
             {
-                collision.gameObject.GetComponent<Ball>().Respawn(true);
+                GameManager.Instance.CurrentGame.RespawnBall(collision.gameObject.GetComponent<Ball>().BallID);
             }
         }
     }

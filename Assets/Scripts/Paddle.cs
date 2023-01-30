@@ -1,11 +1,33 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(AudioSource))]
-public class Paddle : MonoBehaviour
+public class Paddle : NetworkBehaviour
 {
+    public struct MPPlayerData : INetworkSerializable
+    {
+        public int ColorIndex;
+        
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref ColorIndex);
+            
+        }
+    }
+
+    private NetworkVariable<MPPlayerData> _mPPlayerData = new NetworkVariable<MPPlayerData>(
+        new MPPlayerData
+        {
+            ColorIndex = (int)PlayerColors.DEFAULT
+
+        }, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner
+        );
+
     public int PlayerID = 0;
 
     [SerializeField] private float _speed = 200;
@@ -19,32 +41,21 @@ public class Paddle : MonoBehaviour
         _myRB = GetComponent<Rigidbody2D>();
         _myAS = GetComponent<AudioSource>();
     }
-    // Start is called before the first frame update
-    void Start()
+
+    private void Update()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        _inputDir = Input.GetAxisRaw("Horizontal");
-
-        //if(Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-        //{
-        //    playerDirection += -1;
-        //}
-
-        //if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-        //{
-        //    playerDirection += 1;
-        //}
-
+        //if (!IsOwner) return;
         
     }
 
     private void FixedUpdate()
     {
+        if ((!IsOwner) && ((GameManager.Instance.GameMode != GameMode.NOT_SET) && (GameManager.Instance.GameMode != GameMode.SINGLE))) return;
+        _inputDir = Input.GetAxisRaw("Horizontal");
+        if(GameManager.Instance.GameMode == GameMode.CLIENT)
+        {
+            _inputDir *= -1;
+        }
         _myRB.velocity = Vector2.right * _speed * _inputDir;
     }
 
@@ -55,6 +66,30 @@ public class Paddle : MonoBehaviour
             collision.gameObject.GetComponent<Ball>().SetPlayerOwnership(PlayerID, gameObject.GetComponent<SpriteRenderer>().color);
             _myAS.Play();
         }
+    }
+
+    [ClientRpc]
+    //private void SetColorClientRpc(int colorIndex, ClientRpcParams clientRpcParams = default)
+    //{
+    //    Debug.Log("ClientRPC Triggered, colorIndex: " + colorIndex);
+    //    if (colorIndex >= GameManager.Instance.PlayerColors.Count) return;
+    //    gameObject.GetComponent<SpriteRenderer>().color = GameManager.Instance.PlayerColors[colorIndex];
+    //}
+    private void SetColorClientRpc(int colorIndex)
+    {
+        Debug.Log("ClientRPC Triggered, colorIndex: " + colorIndex);
+        if (colorIndex >= GameManager.Instance.PlayerColors.Count) return;
+        gameObject.GetComponent<SpriteRenderer>().color = GameManager.Instance.PlayerColors[colorIndex];
+    }
+
+    public void SetColor(int colorIndex)
+    {
+        if (!IsOwner) return;
+        //SetColorClientRpc(colorIndex, new ClientRpcParams
+        //{
+        //    Send = new ClientRpcSendParams { TargetClientIds = new List<ulong>() { 1, } }
+        //});
+        SetColorClientRpc(colorIndex);
     }
 
 }

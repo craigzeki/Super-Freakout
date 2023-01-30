@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 917871752681711347}
   - component: {fileID: 4499080808066589543}
   - component: {fileID: -8591946421782635185}
+  - component: {fileID: 2169044390569199429}
   m_Layer: 0
   m_Name: Brick
   m_TagString: Untagged
@@ -143,5 +144,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad7e13eb17b60094e95276d9c44e8d6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _brickColors:
+  - {r: 0.16470589, g: 0.6431373, b: 0, a: 1}
+  - {r: 0.8962264, g: 0.5374961, b: 0, a: 1}
+  - {r: 0.8584906, g: 0.20284164, b: 0.10933607, a: 1}
+  - {r: 0.32776263, g: 0.1579299, b: 0.8584906, a: 1}
+  - {r: 0.7735849, g: 0.09852261, b: 0.75657016, a: 1}
   AudioIndex: 0
   Points: 0
+  BrickManager: {fileID: 0}
+--- !u!114 &2169044390569199429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917871752681711372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1

@@ -49,6 +49,7 @@ MonoBehaviour:
   _columns: 12
   _spacing: 0.1
   _brickPrefab: {fileID: 917871752681711372, guid: 6250b912bc4ba9e4384657b92843558e, type: 3}
+  _mpBrickPrefab: {fileID: 917871752681711372, guid: c7e8bf5917cc2064084d459c4f001670, type: 3}
   _brickColors:
   - {r: 0.16470589, g: 0.6431373, b: 0, a: 1}
   - {r: 0.8962264, g: 0.5374961, b: 0, a: 1}
@@ -232,6 +233,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2208711682200236178}
   - component: {fileID: 7422518153738969937}
+  - component: {fileID: -4932455257171221516}
   m_Layer: 0
   m_Name: GameContainerMPBattle
   m_TagString: Untagged
@@ -274,9 +276,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _brickManager: {fileID: 818519298208950542}
   _paddlePrefab: {fileID: 3488709132944021415, guid: 0befe3169e00cff48a4474450a5a859c, type: 3}
+  _paddleMPHostPrefab: {fileID: 3488709132944021415, guid: 04c6891c597dad54a977ec632f6c8b41, type: 3}
+  _paddleMPClientPrefab: {fileID: 3488709132944021415, guid: 4872a896fb8cd2847bb544b4c744be5a, type: 3}
   _p1SpawnPoint: {fileID: 892816737761173661}
   _p2SpawnPoint: {fileID: 3111870644041888640}
+  _mpBallPrefab: {fileID: 790513195173171472, guid: 65e5a6df1eb196d43889f40ee20e3d4e, type: 3}
+  _mpBallSpawnPoints:
+  - {fileID: 2027827348449106506}
+  - {fileID: 7708830835851314907}
   _startingBallsSinglePlayer: 3
+  _statusPanel: {fileID: 0}
+  _statusText: {fileID: 0}
+--- !u!114 &-4932455257171221516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5226693438338731856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &5538328030863406451
 GameObject:
   m_ObjectHideFlags: 0
