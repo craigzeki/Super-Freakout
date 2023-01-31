@@ -70,7 +70,7 @@ public class BrickManager : NetworkBehaviour
                 
                 mBrick.Points = _rows - y;
                 mBrick.BrickManager = this;
-                mBrick.SetColorIndex(y % mBrick.BrickColors.Length);
+                mBrick.SetBrickData(y % mBrick.BrickColors.Length, false);
                 bricks.Add(brick);
             }
         }
@@ -88,6 +88,7 @@ public class BrickManager : NetworkBehaviour
 
         int[] brickColors = new int[_columns * _rows];
         int brickColorsIndex = 0;
+        bool isGoldenBrick = false;
 
         for (int x = 0; x < _columns; x++)
         {
@@ -112,9 +113,10 @@ public class BrickManager : NetworkBehaviour
                 NetworkObject netObj = brick.GetComponent<NetworkObject>();
                 netObj.Spawn(true);
                 //netObj.TrySetParent(transform);
-
+                
+                isGoldenBrick = ((x == 5) && (y == 2));
                 //must set the color after the network object has been spawned as it is a network variable
-                mBrick.SetColorIndex(brickColors[brickColorsIndex]);
+                mBrick.SetBrickData(brickColors[brickColorsIndex], isGoldenBrick);
                 brickColorsIndex++;
                 bricks.Add(brick);
             }
@@ -168,7 +170,7 @@ public class BrickManager : NetworkBehaviour
         for(int i = 0; i < colourIDs.Length; i++)
         {
             bricks[i].GetComponent<Brick>().BrickManager = this;
-            bricks[i].GetComponent<Brick>().SetColorIndex(colourIDs[i]);
+            bricks[i].GetComponent<Brick>().SetBrickData(colourIDs[i], (i == 27));
             
         }
     }

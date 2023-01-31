@@ -116,13 +116,15 @@ public class Game : NetworkBehaviour
     public void SpawnPlayersServerRpc(ulong clientId, bool isHost)
     {
         int colorIndex = (int)PlayerColors.DEFAULT;
+        int playerID = -1;
+
         GameObject player;
         if (isHost)
         {
             colorIndex = (int)PlayerColors.YELLOW;
             player = (GameObject)Instantiate(_paddleMPHostPrefab, _p1SpawnPoint.position, Quaternion.identity);
             _hostPlayer = player.GetComponent<Paddle>();
-            _hostPlayer.PlayerID = 0;
+            playerID = _hostPlayer.PlayerID = 0;
             player.GetComponent<SpriteRenderer>().color = GameManager.Instance.PlayerColors[colorIndex];
             
             _playerInfo.Add(new PlayerInfo(GameManager.Instance.PlayerColors[colorIndex], "Host", 0, 0));
@@ -133,7 +135,7 @@ public class Game : NetworkBehaviour
             colorIndex = (int)PlayerColors.TEAL;
             player = (GameObject)Instantiate(_paddleMPClientPrefab, _p2SpawnPoint.position, Quaternion.identity);
             _clientPlayer = player.GetComponent<Paddle>();
-            _clientPlayer.PlayerID = 1;
+            playerID = _clientPlayer.PlayerID = 1;
             player.GetComponent<SpriteRenderer>().color = GameManager.Instance.PlayerColors[colorIndex];
             _playerInfo.Add(new PlayerInfo(GameManager.Instance.PlayerColors[colorIndex], "Client", 0, 0));
             _brickManager.MPResetBricks();
@@ -143,7 +145,7 @@ public class Game : NetworkBehaviour
             
         NetworkObject netObj = player.GetComponent<NetworkObject>();
         player.SetActive(true);
-        player.GetComponent<Paddle>().SetColor(colorIndex);
+        player.GetComponent<Paddle>().SetPlayerData(colorIndex, playerID);
         netObj.SpawnAsPlayerObject(clientId, true);
         //netObj.Spawn(true);
     }
@@ -227,5 +229,19 @@ public class Game : NetworkBehaviour
         _mpBallStartingVelocities[ballID] = (UnityEngine.Random.insideUnitCircle.normalized);
         RespawnBallClientRpc(ballID, _mpBallStartingVelocities[ballID]);
 
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        foreach (GameObject ball in _balls)
+        {
+            if(ball != null) Destroy(ball);
+        }
+
+        foreach (Paddle player in _players)
+        {
+            if(player != null) Destroy(player.gameObject);
+        }
     }
 }

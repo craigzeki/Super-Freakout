@@ -300,6 +300,7 @@ public class GameManager : MonoBehaviour
             case GameState.MULTI_PLAYER_H2H:
                 break;
             case GameState.MULTI_PLAYER_BATTLE:
+                //NetworkManager.Singleton.Shutdown();
                 break;
             case GameState.QUIT:
                 break;
@@ -307,6 +308,13 @@ public class GameManager : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    public void SetMPWinMessage(string message, bool gameOver)
+    {
+        _mpStatusText.text = message;
+        _mpStatusPanel.SetActive(true);
+        if (gameOver) GameOver();
     }
 
     private void LoadMenu()

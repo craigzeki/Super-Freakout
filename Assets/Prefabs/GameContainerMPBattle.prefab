@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 818519298208950541}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.3, y: 0.6, z: 0}
+  m_LocalPosition: {x: -3.05, y: 0.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -46,16 +46,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rows: 5
-  _columns: 12
+  _columns: 11
   _spacing: 0.1
   _brickPrefab: {fileID: 917871752681711372, guid: 6250b912bc4ba9e4384657b92843558e, type: 3}
   _mpBrickPrefab: {fileID: 917871752681711372, guid: c7e8bf5917cc2064084d459c4f001670, type: 3}
-  _brickColors:
-  - {r: 0.16470589, g: 0.6431373, b: 0, a: 1}
-  - {r: 0.8962264, g: 0.5374961, b: 0, a: 1}
-  - {r: 0.8584906, g: 0.20284164, b: 0.10933607, a: 1}
-  - {r: 0.32776263, g: 0.1579299, b: 0.8584906, a: 1}
-  - {r: 0.7735849, g: 0.09852261, b: 0.75657016, a: 1}
   _brickSounds:
   - {fileID: 8300000, guid: cd9ed31b3c1868246b1eb608548071b4, type: 3}
   - {fileID: 8300000, guid: acbb831a69d6122409d0bf9e57b6a874, type: 3}

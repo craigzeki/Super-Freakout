@@ -150,6 +150,7 @@ MonoBehaviour:
   - {r: 0.8584906, g: 0.20284164, b: 0.10933607, a: 1}
   - {r: 0.32776263, g: 0.1579299, b: 0.8584906, a: 1}
   - {r: 0.7735849, g: 0.09852261, b: 0.75657016, a: 1}
+  _goldenBrickColor: {r: 1, g: 0.8784314, b: 0.03137255, a: 1}
   AudioIndex: 0
   Points: 0
   BrickManager: {fileID: 0}

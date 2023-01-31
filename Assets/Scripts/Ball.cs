@@ -5,8 +5,11 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+//public class Ball : NetworkBehaviour
 public class Ball : MonoBehaviour
 {
+    //private NetworkVariable<int> owndedByPlayerVar = new NetworkVariable<int>();
+
     private int _ownedByPlayer = -1;
 
     [SerializeField] private int _startSpeed = 5;
@@ -35,12 +38,26 @@ public class Ball : MonoBehaviour
 
     private void Awake()
     {
+       
         _respawnSpeed = _speed = _startSpeed; 
         _minVelocityNorm = new Vector3(1, Mathf.Tan(_minBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _maxVelocityNorm = new Vector3(1, Mathf.Tan(_maxBounceAngleDeg * Mathf.Deg2Rad), 0).normalized;
         _myRb = GetComponent<Rigidbody2D>();
         _ballStartPosition = transform.position;
     }
+
+    //public override void OnNetworkSpawn()
+    //{
+    //    base.OnNetworkSpawn();
+    //    owndedByPlayerVar.Value = _ownedByPlayer;
+    //    owndedByPlayerVar.OnValueChanged += SetOwnedByPlayerEvent;
+    //}
+
+    //private void SetOwnedByPlayerEvent(int previous, int current)
+    //{
+    //    _ownedByPlayer = current;
+    //}
+
     // Start is called before the first frame update
     void Start()
     {
@@ -132,7 +149,7 @@ public class Ball : MonoBehaviour
         _ownedByPlayer = playerID;
         
         gameObject.GetComponent<SpriteRenderer>().color = playerColor;
-        
+        //if (GameManager.Instance.GameMode != GameMode.SINGLE) owndedByPlayerVar.Value = playerID;
         
     }
     private void OnCollisionEnter2D(Collision2D collision)

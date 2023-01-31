@@ -8,6 +8,7 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class Paddle : NetworkBehaviour
 {
+    private NetworkVariable<int> _playerIDVar = new NetworkVariable<int>();
     public struct MPPlayerData : INetworkSerializable
     {
         public int ColorIndex;
@@ -35,6 +36,30 @@ public class Paddle : NetworkBehaviour
     private float _inputDir;
     private Rigidbody2D _myRB;
     private AudioSource _myAS;
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        _playerIDVar.Value = -1;
+        _playerIDVar.OnValueChanged += SetPlayerIDEvent;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        _playerIDVar.OnValueChanged -= SetPlayerIDEvent;
+    }
+
+    private void SetPlayerIDEvent(int previous, int current)
+    {
+        PlayerID = current;
+    }
+
+    public void SetPlayerID(int playerID)
+    {
+        if (GameManager.Instance.GameMode != GameMode.SINGLE) _playerIDVar.Value = playerID;
+        PlayerID = playerID;
+    }
 
     private void Awake()
     {
@@ -75,21 +100,25 @@ public class Paddle : NetworkBehaviour
     //    if (colorIndex >= GameManager.Instance.PlayerColors.Count) return;
     //    gameObject.GetComponent<SpriteRenderer>().color = GameManager.Instance.PlayerColors[colorIndex];
     //}
-    private void SetColorClientRpc(int colorIndex)
+    private void SetPlayerDataClientRpc(int colorIndex, int playerID)
     {
-        Debug.Log("ClientRPC Triggered, colorIndex: " + colorIndex);
+        Debug.Log("ClientRPC Triggered, colorIndex: " + colorIndex + ", playerID: " + playerID);
         if (colorIndex >= GameManager.Instance.PlayerColors.Count) return;
         gameObject.GetComponent<SpriteRenderer>().color = GameManager.Instance.PlayerColors[colorIndex];
+        PlayerID = playerID;
     }
 
-    public void SetColor(int colorIndex)
+    
+
+    public void SetPlayerData(int colorIndex, int playerID)
     {
         if (!IsOwner) return;
         //SetColorClientRpc(colorIndex, new ClientRpcParams
         //{
         //    Send = new ClientRpcSendParams { TargetClientIds = new List<ulong>() { 1, } }
         //});
-        SetColorClientRpc(colorIndex);
+        SetPlayerDataClientRpc(colorIndex, playerID);
+
     }
 
 }
